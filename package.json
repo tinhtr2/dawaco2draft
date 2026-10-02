@@ -1,0 +1,8 @@
+{
+  "name": "soan-thao-2-buoc",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/functions": "latest"
+  }
+}

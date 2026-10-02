@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập — Soạn thảo văn bản 2 bước</title>
+<style>
+:root{--paper:#F3F1EA;--card:#fff;--ink:#26221B;--line:#DCD7C8;--blue:#2145B8;--blue-dark:#18348C;--seal:#C4161C;--seal-soft:#FBEAEA;--muted:#6E675B;--serif:'Times New Roman',Times,serif;--sans:system-ui,'Segoe UI',Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-family:var(--sans);display:flex;align-items:center;justify-content:center;padding:20px}
+.box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px 26px;box-shadow:0 6px 24px rgba(0,0,0,.06)}
+h1{font-family:var(--serif);font-size:24px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+.stamp{display:inline-block;border:2.5px solid var(--seal);color:var(--seal);border-radius:8px;padding:5px 10px;font-weight:700;font-size:11.5px;letter-spacing:1px;transform:rotate(-3deg);margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 5px}
+input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:15px;font-family:var(--sans)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button{width:100%;margin-top:20px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:11px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+button:hover{background:var(--blue-dark)}
+button[disabled]{opacity:.6;cursor:wait}
+.err{display:none;margin-top:14px;background:var(--seal-soft);border:1px solid #EDC5C5;color:var(--seal);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.note{margin-top:18px;font-size:12.5px;color:var(--muted);line-height:1.5}
+</style>
+</head>
+<body>
+<main class="box">
+  <div class="stamp">MÁY SOẠN 95% · NGƯỜI KIỂM 5%</div>
+  <h1>Soạn thảo văn bản 2 bước</h1>
+  <p class="sub">Đăng nhập bằng tài khoản quản trị viên đã cấp cho bạn.</p>
+  <form id="f" autocomplete="on" novalidate>
+    <label for="u">Tên đăng nhập</label>
+    <input id="u" name="username" autocomplete="username" required autofocus>
+    <label for="p">Mật khẩu</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <button id="b" type="submit">Đăng nhập</button>
+    <div id="e" class="err" role="alert"></div>
+  </form>
+  <p class="note">Chưa có tài khoản hoặc quên mật khẩu? Liên hệ người quản trị app. Phiên đăng nhập được giữ trong vài ngày trên trình duyệt này.</p>
+</main>
+<script>
+(function () {
+  var f = document.getElementById('f'), b = document.getElementById('b'), e = document.getElementById('e');
+  function showErr(m) { e.textContent = m; e.style.display = 'block'; }
+  f.addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    e.style.display = 'none';
+    var u = document.getElementById('u').value.trim(), p = document.getElementById('p').value;
+    if (!u || !p) { showErr('Hãy nhập đủ tên đăng nhập và mật khẩu.'); return; }
+    b.disabled = true; b.textContent = 'Đang kiểm tra…';
+    try {
+      var r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }), credentials: 'same-origin' });
+      var d = {}; try { d = await r.json(); } catch (x) {}
+      if (!r.ok) throw new Error(d.error || ('Lỗi máy chủ (mã ' + r.status + ')'));
+      var next = new URLSearchParams(location.search).get('next') || '/';
+      if (!/^\/(?!\/)/.test(next)) next = '/';           // chi cho phep chuyen trong cung trang
+      location.href = next;
+    } catch (x) {
+      showErr(x.message === 'Failed to fetch' ? 'Không kết nối được máy chủ — kiểm tra mạng rồi thử lại.' : x.message);
+      b.disabled = false; b.textContent = 'Đăng nhập';
+    }
+  });
+})();
+</script>
+</body>
+</html>
